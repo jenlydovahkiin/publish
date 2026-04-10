@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>MBTI 专业性格测评 | 16型人格</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  body{background:linear-gradient(135deg,#4158D0,#8696FE);min-height:100vh;padding:20px;color:#222}
+  .wrap{max-width:720px;margin:0 auto}
+  .card{background:#fff;border-radius:20px;padding:28px;box-shadow:0 10px 30px rgba(0,0,0,0.1);margin-bottom:24px}
+  .start{text-align:center;padding:40px 20px}
+  .start h1{font-size:28px;margin-bottom:12px;color:#222}
+  .start p{color:#666;line-height:1.6;margin-bottom:30px}
+  .author{margin-top:20px;color:#888;font-size:14px}
+  .btn{background:linear-gradient(90deg,#4158D0,#6676F2);color:white;border:none;padding:16px 32px;border-radius:16px;font-size:16px;font-weight:600;cursor:pointer;width:100%}
+  .btn:active{transform:scale(0.98)}
+  .test{display:none}
+  .progress{color:#666;margin-bottom:12px}
+  .question{font-size:18px;font-weight:600;margin-bottom:20px;line-height:1.5}
+  .options{display:grid;gap:10px}
+  .opt{padding:14px 16px;border:1px solid #ddd;border-radius:14px;cursor:pointer;background:#fbfbfb}
+  .opt:hover{border-color:#4158D0;background:#f0f4ff}
+  .opt.active{background:#4158D0;color:white;border-color:#4158D0}
+  .result{display:none}
+  .result h2{font-size:24px;margin-bottom:8px}
+  .type{font-size:26px;font-weight:bold;color:#4158D0;margin-bottom:12px}
+  .section{margin-top:18px}
+  .section h4{margin-bottom:6px;font-size:16px;color:#333}
+  .section p{color:#555;line-height:1.6}
+  .share{margin-top:24px;text-align:center}
+  .restart{background:#f1f3f4;color:#222;margin-top:12px}
+  .footer{text-align:center;color:white;margin-top:30px;font-size:14px;opacity:0.9}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="card start" id="start">
+    <h1>MBTI 16型人格专业测评</h1>
+    <p>全球最流行的性格测评工具，通过60题精准判断你的性格类型，揭示你的思维、情感、行为模式。</p>
+    <div class="author">作者：荆豆豆</div>
+    <button class="btn" onclick="startTest()">开始测评</button>
+  </div>
+
+  <div class="card test" id="test">
+    <div class="progress" id="progress"></div>
+    <div class="question" id="qtext"></div>
+    <div class="options" id="opts"></div>
+    <button class="btn" style="margin-top:24px" onclick="next()">下一题</button>
+  </div>
+
+  <div class="card result" id="result">
+    <h2>你的测评结果</h2>
+    <div class="type" id="type"></div>
+    <div class="section">
+      <h4>性格简介</h4>
+      <p id="desc"></p>
+    </div>
+    <div class="section">
+      <h4>优势</h4>
+      <p id="good"></p>
+    </div>
+    <div class="section">
+      <h4>待提升</h4>
+      <p id="bad"></p>
+    </div>
+    <div class="section">
+      <h4>爱情相处</h4>
+      <p id="love"></p>
+    </div>
+    <div class="section">
+      <h4>适合职业</h4>
+      <p id="job"></p>
+    </div>
+    <div class="share">
+      <button class="btn" onclick="alert('截图即可保存你的结果！')">截图保存结果</button>
+      <button class="btn restart" onclick="location.reload()">重新测评</button>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  © 2026 荆豆豆 版权所有
+</div>
+
+<script>
+const questions = [
+  {q:"你更愿意和一群人一起活动",e:1,i:0},
+  {q:"你更关注现实细节而非抽象概念",s:1,n:0},
+  {q:"做决定时你更看重逻辑而非感受",t:1,f:0},
+  {q:"你喜欢计划好事情而不是随机应变",j:1,p:0},
+  {q:"社交后你通常感到更有活力",e:1,i:0},
+  {q:"你相信经验比灵感更可靠",s:1,n:0},
+  {q:"你容易指出问题并理性分析",t:1,f:0},
+  {q:"你习惯提前安排日程",j:1,p:0},
+  {q:"你喜欢认识新朋友并轻松交流",e:1,i:0},
+  {q:"你常思考未来的可能性",n:1,s:0},
+  {q:"你很在意他人情绪并容易共情",f:1,t:0},
+  {q:"你喜欢事情有明确结果和截止日",j:1,p:0},
+  {q:"派对上你通常很活跃",e:1,i:0},
+  {q:"你注重事实和实用性",s:1,n:0},
+  {q:"你倾向直言不讳",t:1,f:0},
+  {q:"你讨厌临时变动计划",j:1,p:0},
+  {q:"独处太久会让你觉得无聊",e:1,i:0},
+  {q:"你喜欢动手实践而非空想",s:1,n:0},
+  {q:"公平比人情更重要",t:1,f:0},
+  {q:"你喜欢把事情安排得井井有条",j:1,p:0},
+  {q:"你容易融入新团体",e:1,i:0},
+  {q:"你更在意当下而非远方",s:1,n:0},
+  {q:"你不容易被情绪左右",t:1,f:0},
+  {q:"你习惯列出清单完成任务",j:1,p:0},
+  {q:"你喜欢热闹环境",e:1,i:0},
+  {q:"你是务实且脚踏实地的人",s:1,n:0},
+  {q:"冲突时你更看重道理",t:1,f:0},
+  {q:"你不喜欢拖延",j:1,p:0},
+  {q:"你经常主动发起聊天",e:1,i:0},
+  {q:"你对细节很敏感",s:1,n:0},
+  {q:"你不太会委婉表达",t:1,f:0},
+  {q:"你喜欢事情尽早确定",j:1,p:0},
+  {q:"你喜欢被人群包围",e:1,i:0},
+  {q:"你学习更喜欢实操",s:1,n:0},
+  {q:"你不容易被感动",t:1,f:0},
+  {q:"你习惯按步骤做事",j:1,p:0},
+  {q:"你很容易和陌生人熟络",e:1,i:0},
+  {q:"你更相信亲眼所见",s:1,n:0},
+  {q:"你更偏向理性思考",t:1,f:0},
+  {q:"你喜欢有秩序的环境",j:1,p:0},
+  {q:"你在人群中感到放松",e:1,i:0},
+  {q:"你不喜欢虚幻的理论",s:1,n:0},
+  {q:"你不擅长安慰别人",t:1,f:0},
+  {q:"你习惯提前准备",j:1,p:0},
+  {q:"你喜欢社交活动",e:1,i:0},
+  {q:"你注重实际用途",s:1,n:0},
+  {q:"你认为诚实比温和更重要",t:1,f:0},
+  {q:"你喜欢确定的生活",j:1,p:0},
+  {q:"你常主动联系朋友",e:1,i:0},
+  {q:"你是现实的人",s:1,n:0},
+  {q:"你不容易情绪化",t:1,f:0},
+  {q:"你讨厌突发状况",j:1,p:0},
+  {q:"你喜欢团队合作",e:1,i:0},
+  {q:"你关注具体信息",s:1,n:0},
+  {q:"你习惯客观判断",t:1,f:0},
+  {q:"你喜欢规划每一天",j:1,p:0},
+  {q:"你不喜欢长期独处",e:1,i:0},
+  {q:"你不喜欢抽象话题",s:1,n:0},
+  {q:"你做决定很快",t:1,f:0},
+  {q:"你喜欢稳定的生活节奏",j:1,p:0}
+];
+
+const types = {
+  INTJ:{name:"战略家型",desc:"独立、深刻、战略思维极强，喜欢规划长远未来，追求效率与成长。",
+  good:"洞察力强、自律、目标清晰、学习能力极强",
+  bad:"有时显得冷漠、不擅长表达情感、过于挑剔",
+  love:"注重精神共鸣，喜欢成熟稳定的伴侣",
+  job:"产品经理、架构师、科研、金融、管理"},
+
+  INTP:{name:"逻辑学家型",desc:"喜欢思考本质、好奇心强、热爱分析、追求真理。",
+  good:"理性、创造力强、思考深刻、学习快",
+  bad:"拖延、不喜欢琐事、不擅长社交",
+  love:"喜欢思想同频、自由不束缚的关系",
+  job:"程序员、科研、哲学、设计、分析师"},
+
+  ENTJ:{name:"指挥官型",desc:"天生领导者，果断、强势、目标导向，擅长组织与决策。",
+  good:"领导力强、执行力强、理性、有魄力",
+  bad:"强势、缺乏耐心、控制欲强",
+  love:"欣赏能力强、独立、能跟上节奏的人",
+  job:"高管、创业、律师、管理、产品负责人"},
+
+  ENTP:{name:"辩论家型",desc:"思维敏捷、喜欢挑战、创意爆炸、擅长打破规则。",
+  good:"聪明、幽默、创新、反应快",
+  bad:"容易三分钟热度、不喜欢重复",
+  love:"喜欢有趣、能聊得来、不粘人的伴侣",
+  job:"策划、新媒体、产品、市场、创业"},
+
+  INFJ:{name:"提倡者型",desc:"温柔而坚定、理想主义、洞察力极强、重视精神世界。",
+  good:"共情力强、深刻、专一、有责任感",
+  bad:"敏感、内耗、容易自我怀疑",
+  love:"追求灵魂伴侣，非常专一深情",
+  job:"心理、教育、写作、咨询、设计"},
+
+  INFP:{name:"调停者型",desc:"理想主义、内心丰富、温柔、追求真实与美好。",
+  good:"善良、创意强、审美高、真诚",
+  bad:"敏感、逃避冲突、容易emo",
+  love:"非常温柔包容，重视精神连接",
+  job:"文学、艺术、设计、心理、自媒体"},
+
+  ENFJ:{name:"主人公型",desc:"温暖、有魅力、擅长鼓舞他人、天生照顾者。",
+  good:"情商高、领导力温和、受欢迎、负责",
+  bad:"过度付出、容易讨好、不懂得拒绝",
+  love:"付出型，希望被理解与珍惜",
+  job:"教育、公关、咨询、HR、内容创作"},
+
+  ENFP:{name:"竞选者型",desc:"热情、创意无限、乐观、喜欢自由与新鲜感。",
+  good:"活泼、创意强、人缘好、积极",
+  bad:"三分钟热度、不喜欢压力",
+  love:"喜欢有趣、自由、能一起探索世界",
+  job:"新媒体、策划、设计、演艺、博主"},
+
+  ISTJ:{name:"物流师型",desc:"务实、严谨、可靠、遵守规则、责任感极强。",
+  good:"踏实、靠谱、细致、稳定",
+  bad:"固执、不喜欢变化、不善表达",
+  love:"稳重专一，重视安全感与承诺",
+  job:"财务、公务员、技术、医疗、运营"},
+
+  ISFJ:{name:"守卫者型",desc:"温和、细心、付出型、默默守护他人。",
+  good:"耐心、体贴、可靠、责任感强",
+  bad:"不懂拒绝、容易委屈自己",
+  love:"非常顾家、温柔付出型",
+  job:"医护、HR、行政、教育、文职"},
+
+  ESTJ:{name:"总经理型",desc:"务实、理性、组织能力极强，适合管理。",
+  good:"执行力强、高效、负责、正直",
+  bad:"强势、不够灵活、缺乏耐心",
+  love:"直接、稳定、重视责任与家庭",
+  job:"管理、行政、金融、法律、运营"},
+
+  ESFJ:{name:"执政官型",desc:"热情、照顾他人、重视和谐、非常体贴。",
+  good:"温暖、负责、人缘好、顾家",
+  bad:"讨好型、在意他人眼光",
+  love:"付出型，重视陪伴与安全感",
+  job:"教育、医护、人事、客服、销售"},
+
+  ISTP:{name:"鉴赏家型",desc:"冷静理性、动手极强、擅长解决实际问题。",
+  good:"冷静、务实、动手强、灵活",
+  bad:"不善表达情感、不喜欢承诺",
+  love:"需要空间，不喜欢束缚",
+  job:"工程、技术、机械、设计、研发"},
+
+  ISFP:{name:"探险家型",desc:"温和、审美强、热爱自由、喜欢真实体验。",
+  good:"艺术感强、温柔、真实",
+  bad:"敏感、逃避压力、不善规划",
+  love:"温柔、陪伴型、重视感觉",
+  job:"设计、艺术、摄影、手工、美妆"},
+
+  ESTP:{name:"企业家型",desc:"灵活、外向、擅长应变、喜欢挑战。",
+  good:"果敢、社交强、反应快",
+  bad:"冲动、缺乏耐心",
+  love:"热情直接，喜欢有趣刺激",
+  job:"销售、市场、创业、运营、公关"},
+
+  ESFP:{name:"表演者型",desc:"热情活泼、热爱生活、喜欢被关注。",
+  good:"乐观、有趣、人缘极好",
+  bad:"容易浮躁、不喜欢深度思考",
+  love:"热情、喜欢陪伴与浪漫",
+  job:"演艺、服务、直播、销售、创意"}
+};
+
+let cur = 0;
+let score = {e:0,i:0,s:0,n:0,t:0,f:0,j:0,p:0};
+let sel = null;
+
+function startTest(){
+  document.getElementById("start").style.display = "none";
+  document.getElementById("test").style.display = "block";
+  show();
+}
+
+function show(){
+  const q = questions[cur];
+  document.getElementById("progress").innerText = `第 ${cur+1} / 60 题`;
+  document.getElementById("qtext").innerText = q.q;
+  const box = document.getElementById("opts");
+  box.innerHTML = `
+  <div class="opt" onclick="c(0)">非常不符合</div>
+  <div class="opt" onclick="c(1)">不太符合</div>
+  <div class="opt" onclick="c(2)">中立</div>
+  <div class="opt" onclick="c(3)">比较符合</div>
+  <div class="opt" onclick="c(4)">非常符合</div>`;
+  sel = null;
+}
+
+function c(v){
+  sel = v;
+  document.querySelectorAll(".opt").forEach((o,i)=>o.classList.toggle("active",i===v));
+}
+
+function next(){
+  if(sel === null) return alert("请选择一项");
+  const q = questions[cur];
+  const w = sel / 4;
+  score.e += q.e * w;
+  score.i += q.i * w;
+  score.s += q.s * w;
+  score.n += q.n * w;
+  score.t += q.t * w;
+  score.f += q.f * w;
+  score.j += q.j * w;
+  score.p += q.p * w;
+  cur++;
+  if(cur >= questions.length) return finish();
+  show();
+}
+
+function finish(){
+  document.getElementById("test").style.display = "none";
+  document.getElementById("result").style.display = "block";
+  const ei = score.e > score.i ? "E" : "I";
+  const sn = score.s > score.n ? "S" : "N";
+  const tf = score.t > score.f ? "T" : "F";
+  const jp = score.j > score.p ? "J" : "P";
+  const key = ei + sn + tf + jp;
+  const t = types[key] || types.INFP;
+  document.getElementById("type").innerText = key + " · " + t.name;
+  document.getElementById("desc").innerText = t.desc;
+  document.getElementById("good").innerText = t.good;
+  document.getElementById("bad").innerText = t.bad;
+  document.getElementById("love").innerText = t.love;
+  document.getElementById("job").innerText = t.job;
+}
+</script>
+</body>
+</html>
